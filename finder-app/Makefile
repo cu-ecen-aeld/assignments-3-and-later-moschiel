@@ -33,13 +33,13 @@ all: $(TARGET)
 # This depends on the object file (writer.o). 
 # If writer.o changes or doesn't exist, it will be rebuilt.
 $(TARGET): $(OBJS)
-	# Use the compiler (CC) to link the object file (OBJS) into the final executable (TARGET).
+	# Use the compiler "$(CC)" to link the object file (OBJS) into the final executable (TARGET).
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
 # Rule to compile the source file (writer.c) into the object file (writer.o).
 # If writer.c changes or writer.o doesn't exist, this rule is executed.
 $(OBJS): $(SRCS)
-	# Use the compiler (CC) to compile writer.c into writer.o.
+	# Use the compiler "$(CC)" to compile writer.c into writer.o.
 	$(CC) $(CFLAGS) -c $(SRCS) -o $(OBJS)
 
 # The "clean" target is a utility rule.
