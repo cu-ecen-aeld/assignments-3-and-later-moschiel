@@ -1,4 +1,11 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -16,8 +23,27 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
+    int status = system(cmd);
 
-    return true;
+    if(status == -1) {
+        fprintf(stderr, "Error running command: %s", cmd);
+
+        return false;
+    } else if(WIFEXITED(status)) {
+        // terminated normally with a call to _exit(int status);
+        int exitCode = WEXITSTATUS(status);
+        if (exitCode == 0) {
+            printf("Command executed successfully.\n");
+            return true;
+        } else {
+            printf("Command terminated with exit status=%d\n", exitCode);
+            return false;
+        }
+    } else {
+        // Other termination cases
+        printf("Command terminated abnormally.\n");
+        return false;
+    }
 }
 
 /**
@@ -58,10 +84,51 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    bool pass = true;
+    int status;
+    pid_t pid;
+
+    // creates a new process
+    pid = fork();
+
+    if(pid == -1)
+        pass = false;
+    else if (pid == 0) {
+        // This is the child process (pid == 0)
+        
+        // Replace the current process image with a new process
+        // the process will execute the command inserted
+        char *fullPathOfFileToBeExecuted = command[0];
+        execv(fullPathOfFileToBeExecuted, command);
+
+        // execv should not return, otherwise it is an error
+        fprintf(stderr, "child: execv failed");
+        // we may not just 'return' from a child process, we should call exit
+        exit(1);
+    } else {
+        // This is the parent process
+        // wait for the child to finish
+        if (waitpid(pid, &status, 0) == -1) {
+            fprintf(stderr, "parent: waitpid failed");
+            pass = false;
+        } else if(WIFEXITED(status)) {
+            // Child terminated normally with a call to _exit(int status);
+            int exitCode = WEXITSTATUS(status);
+            if (exitCode == 0) {
+                printf("parent: Command executed successfully.\n");
+            } else {
+                printf("parent: Command terminated with exit status=%d\n", exitCode);
+                pass = false;
+            }
+        } else {
+            // Other termination cases
+            printf("parent: Command terminated abnormally.\n");
+            pass = false;
+        }
+    }
 
     va_end(args);
-
-    return true;
+    return pass;
 }
 
 /**
@@ -92,8 +159,70 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+    bool pass = true;
+    int status;
+    pid_t pid;
+
+    // creates a new process
+    pid = fork();
+
+    if(pid == -1)
+        pass = false;
+    else if (pid == 0) {
+        // This is the child process (pid == 0)
+
+        // Open the output file where we will redirect stdout
+        // O_WRONLY: For write only.
+        // O_CREAT: Create the file if it does not exist.
+        // O_TRUNC: Trunc the file to zero length if it exists.
+        // S_IRUSR | S_IWUSR: Allow write and read for the user
+        int fd = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        if (fd == -1) {
+            fprintf(stderr, "child: failed to open output file");
+            exit(1);
+        }
+
+        // Redirect stdout to the file
+        if (dup2(fd, STDOUT_FILENO) == -1) {
+            fprintf(stderr, "child: dup2 failed");
+            close(fd);
+            exit(1);
+        }
+
+        // Close the file descriptor (no longer needed after dup2)
+        close(fd);
+        
+        // Replace the current process image with a new process
+        // the process will execute the command inserted
+        char *fullPathOfFileToBeExecuted = command[0];
+        execv(fullPathOfFileToBeExecuted, command);
+
+        // execv should not return, otherwise it is an error
+        fprintf(stderr, "child: execv failed");
+        // we may not just 'return' from a child process, we should call exit
+        exit(1);
+    } else {
+        // This is the parent process
+        // wait for the child to finish
+        if (waitpid(pid, &status, 0) == -1) {
+            fprintf(stderr, "parent: waitpid failed");
+            pass = false;
+        } else if(WIFEXITED(status)) {
+            // Child terminated normally with a call to _exit(int status);
+            int exitCode = WEXITSTATUS(status);
+            if (exitCode == 0) {
+                printf("parent: Command executed successfully.\n");
+            } else {
+                printf("parent: Command terminated with exit status=%d\n", exitCode);
+                pass = false;
+            }
+        } else {
+            // Other termination cases
+            printf("parent: Command terminated abnormally.\n");
+            pass = false;
+        }
+    }
 
     va_end(args);
-
-    return true;
+    return pass;
 }
