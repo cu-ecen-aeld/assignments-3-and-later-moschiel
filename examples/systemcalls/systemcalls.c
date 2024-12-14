@@ -108,7 +108,8 @@ bool do_exec(int count, ...)
     } else {
         // This is the parent process
         // wait for the child to finish
-        if (waitpid(pid, &status, 0) == -1) {
+        //if (waitpid(pid, &status, 0) == -1) {
+        if (wait(&status) == -1) {
             fprintf(stderr, "parent: waitpid failed");
             pass = false;
         } else if(WIFEXITED(status)) {
@@ -204,7 +205,8 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     } else {
         // This is the parent process
         // wait for the child to finish
-        if (waitpid(pid, &status, 0) == -1) {
+        //if (waitpid(pid, &status, 0) == -1) {
+        if (wait(&status) == -1) {
             fprintf(stderr, "parent: waitpid failed");
             pass = false;
         } else if(WIFEXITED(status)) {
