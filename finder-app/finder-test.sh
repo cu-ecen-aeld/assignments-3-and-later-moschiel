@@ -2,13 +2,24 @@
 # Tester script for assignment 1 and assignment 2
 # Author: Siddhant Jajoo
 
-set -e
-set -u
+set -e # Exit immediately if a command exits with a non-zero status
+set -u # Treat unset variables as an error
 
+# Initialize RUNNING_BUILDROOT to false if not passed as an environment variable.
+# For building with builroot for assignment-4-part-2, pass 'RUNNING_BUILDROOT' as true. 
+RUNNING_BUILDROOT=${RUNNING_BUILDROOT:-false}
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
-username=$(cat conf/username.txt)
+
+# Set conf path according to variable RUNNING_BUILDROOT
+if $RUNNING_BUILDROOT; then
+    CONFIG_DIR="/etc/finder-app/conf"
+else
+    CONFIG_DIR="conf"
+fi
+
+username=$(cat "$CONFIG_DIR/username.txt")
 
 if [ $# -lt 3 ]
 then
@@ -32,7 +43,7 @@ echo "Writing ${NUMFILES} files containing string ${WRITESTR} to ${WRITEDIR}"
 rm -rf "${WRITEDIR}"
 
 # create $WRITEDIR if not assignment1
-assignment=`cat conf/assignment.txt`
+assignment=$(cat "$CONFIG_DIR/assignment.txt")
 
 if [ $assignment != 'assignment1' ]
 then
@@ -55,10 +66,22 @@ fi
 
 for i in $( seq 1 $NUMFILES)
 do
-	./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
+	if $RUNNING_BUILDROOT; then
+		writer "$WRITEDIR/${username}$i.txt" "$WRITESTR" # assuming executable in is the PATH
+	else
+		./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
+	fi
 done
 
-OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
+if $RUNNING_BUILDROOT; then
+	OUTPUTSTRING=$(finder.sh "$WRITEDIR" "$WRITESTR") # assuming executable in is the PATH 
+else
+	OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
+fi
+
+if $RUNNING_BUILDROOT; then
+    echo "${OUTPUTSTRING}" > /tmp/assignment4-result.txt # write a file with output of the finder command
+fi
 
 # remove temporary directories
 rm -rf /tmp/aeld-data
