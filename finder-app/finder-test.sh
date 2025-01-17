@@ -5,9 +5,9 @@
 set -e # Exit immediately if a command exits with a non-zero status
 set -u # Treat unset variables as an error
 
-# Initialize RUNNING_BUILDROOT to false if not passed as an environment variable.
-# For building with builroot for assignment-4-part-2, pass 'RUNNING_BUILDROOT' as true. 
-RUNNING_BUILDROOT=${RUNNING_BUILDROOT:-false}
+# Initialize RUNNING_BUILDROOT to false for assignment-3-and-later.
+# Or Initialize RUNNING_BUILDROOT to true for assignment-4-part-2 
+RUNNING_BUILDROOT=${RUNNING_BUILDROOT:-true}
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
