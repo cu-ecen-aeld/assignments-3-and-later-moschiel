@@ -5,15 +5,15 @@
 set -e # Exit immediately if a command exits with a non-zero status
 set -u # Treat unset variables as an error
 
-# Initialize RUNNING_BUILDROOT to false for assignment-3-and-later.
-# Or Initialize RUNNING_BUILDROOT to true for assignment-4-part-2 
-RUNNING_BUILDROOT=${RUNNING_BUILDROOT:-true}
+# Initialize IS_ASSIGNMENT_4_PART_2 to false for assignment-3-and-later.
+# Or Initialize IS_ASSIGNMENT_4_PART_2 to true for assignment-4-part-2 
+IS_ASSIGNMENT_4_PART_2=${IS_ASSIGNMENT_4_PART_2:-true}
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
 
-# Set conf path according to variable RUNNING_BUILDROOT
-if $RUNNING_BUILDROOT; then
+# Set conf path according to variable IS_ASSIGNMENT_4_PART_2
+if $IS_ASSIGNMENT_4_PART_2; then
     CONFIG_DIR="/etc/finder-app/conf"
 else
     CONFIG_DIR="conf"
@@ -66,20 +66,20 @@ fi
 
 for i in $( seq 1 $NUMFILES)
 do
-	if $RUNNING_BUILDROOT; then
+	if $IS_ASSIGNMENT_4_PART_2; then
 		writer "$WRITEDIR/${username}$i.txt" "$WRITESTR" # assuming executable in is the PATH
 	else
 		./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
 	fi
 done
 
-if $RUNNING_BUILDROOT; then
+if $IS_ASSIGNMENT_4_PART_2; then
 	OUTPUTSTRING=$(finder.sh "$WRITEDIR" "$WRITESTR") # assuming executable in is the PATH 
 else
 	OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
 fi
 
-if $RUNNING_BUILDROOT; then
+if $IS_ASSIGNMENT_4_PART_2; then
     echo "${OUTPUTSTRING}" > /tmp/assignment4-result.txt # write a file with output of the finder command
 fi
 
