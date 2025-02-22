@@ -1,9 +1,25 @@
 CC = $(CROSS_COMPILE)gcc
 
-CFLAGS ?= -Wall -Wextra -Werror
+# Add -g (and optionally -O0) to produce debug symbols for Valgrind
 
-all:
-	$(CC) $(CFLAGS) aesdsocket.c -o aesdsocket
+CFLAGS ?= -Wall -Wextra -g -O0
+
+SRCS = aesdsocket.c \
+	   server_utils.c \
+	   connection_handler.c \
+	   thread_list.c
+
+OBJS = $(SRCS:.c=.o)
+
+TARGET = aesdsocket
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f aesdsocket
+	rm -f $(OBJS) $(TARGET)
