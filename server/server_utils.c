@@ -49,7 +49,7 @@ extern pthread_t timer_thread;
 
     /* Allow address reuse to avoid "Address already in use" on quick restarts */
     int optval = 1;
-    setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval));
 
     /* Configure server address (IPv4) */
     memset(&server_addr, 0, sizeof(server_addr));
@@ -156,8 +156,8 @@ int server_start(char* port) {
         if ( setsockopt(
                 server_sockfd,     // the socket we want to configure 
                 SOL_SOCKET, 
-                SO_REUSEADDR, // int optname, SO_REUSEADDR allows other sockets to bind() to this port, unless there is an active listening socket bound to the port already. 
-                              // This enables you to get around those “Address already in use” error messages when you try to restart your server after a crash.
+                SO_REUSEADDR | SO_REUSEPORT,    // int optname, SO_REUSEADDR allows other sockets to bind() to this port, unless there is an active listening socket bound to the port already. 
+                                                // This enables you to get around those “Address already in use” error messages when you try to restart your server after a crash.
                 &yes,         // void *optval, it’s usually a pointer to an int indicating the value in question. 
                               // For booleans, zero is false, and non-zero is true. And that’s an absolute fact, unless it’s different on your system. 
                               // If there is no parameter to be passed, optval can be NULL.

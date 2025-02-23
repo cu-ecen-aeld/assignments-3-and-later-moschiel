@@ -196,13 +196,13 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     
+    /* Any Thread must be created AFTER DAEMONIZATION, as the FORK process doesnt inherit threads*/
     if (daemon_mode) {
         syslog(LOG_INFO, "Running in daemon mode");
         daemonize();
     }
 
     /* Create Timer thread */
-    /* Any Thread must be created AFTER DAEMONIZATION, as the FORK process doesnt inherit threads*/
     #if USE_THREAD_TIMER
     setup_timer_thread();
     #else
